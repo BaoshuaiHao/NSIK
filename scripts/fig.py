@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+FIGURES_DIR = Path(__file__).resolve().parents[1] / "figures"
+FIGURES_DIR.mkdir(exist_ok=True)
 
 # ===== Labels =====
 variants = ["NSIK", "-Gating", "-Diffusion", "-Source"]
@@ -78,4 +82,4 @@ axes[1].grid(axis='y', linestyle='--', alpha=0.5)
 axes[1].legend()
 
 plt.tight_layout()
-plt.savefig("ablation_dual_metrics.pdf")
+plt.savefig(FIGURES_DIR / "ablation_dual_metrics.pdf")

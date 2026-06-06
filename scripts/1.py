@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+FIGURES_DIR = Path(__file__).resolve().parents[1] / "figures"
+FIGURES_DIR.mkdir(exist_ok=True)
 
 # ======================
 # 数据
@@ -49,7 +53,7 @@ axes[1].set_ylim(80, 100)
 plt.tight_layout()
 
 # 保存论文图
-plt.savefig("role_sensitivity_side_by_side.pdf")
+plt.savefig(FIGURES_DIR / "role_sensitivity_side_by_side.pdf")
 
 plt.close()
 
