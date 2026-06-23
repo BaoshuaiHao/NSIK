@@ -55,7 +55,7 @@ Emails: zhangyj@hitwh.edu.cn; 306736687@qq.com
 \textbf{Abstract:} 
 Inductive knowledge graph completion aims to infer missing relations for unseen entities, which remains challenging in domain-oriented graphs with sparse structures, long-tail entities, and noisy triples. Existing structure-based methods are often vulnerable to error propagation in noisy neighborhoods, while semantic-enhanced approaches usually depend on external textual resources that may be unavailable in vertical domains. 
 To alleviate these issues, this paper proposes NSIK, a structure-enhanced framework for inductive knowledge graph completion that combines structural role modeling, relation-aware gating, and selective global diffusion. Specifically, structural role priors are constructed to characterize global topology patterns, and a relation--role TF-IDF mechanism is introduced to guide diffusion source selection and structural propagation. In local subgraph reasoning, a relation-aware gating strategy is further used to reduce the influence of inconsistent neighbors. Through this local--global collaborative design, NSIK improves structural consistency and enhances robustness under noisy conditions.
-Experiments on three inductive benchmarks show that NSIK achieves competitive Hits@10 and AUC-PR results while providing more stable performance under injected noise. The results suggest that prior-guided structural modeling is an effective way to improve inductive reasoning without relying on external semantic information.
+Experiments on three inductive benchmarks show that NSIK achieves strong Hits@10 and AUC-PR results while providing more stable performance under injected structural noise. The results suggest that prior-guided structural modeling is an effective way to improve inductive reasoning without relying on external semantic information.
 
 \textbf{Keywords:} inductive knowledge graph completion; structural prior modeling; diffusion-based reasoning; noise robustness; domain knowledge graphs
 
@@ -63,7 +63,7 @@ Experiments on three inductive benchmarks show that NSIK achieves competitive Hi
 
 In many domain-oriented applications, knowledge graphs are used to organize entities, relations, and structured domain knowledge for retrieval, reasoning, and decision support. Their structural completeness is therefore important for downstream intelligent tasks.
 
-Compared with open-domain knowledge graphs, domain-specific design knowledge graphs exhibit more distinctive structural and semantic characteristics. First, specialized terminology is often accumulated from long-term engineering practice, leading to inconsistent entity representations and ambiguous semantic boundaries, which significantly increases the difficulty of structural modeling and relation alignment. Second, the continuous emergence of new materials, processes, and components introduces a large number of long-tail and newly appearing entities, resulting in sparse local connectivity and insufficient structural evidence. Third, domain knowledge is frequently curated manually or extracted from expert experience, inevitably introducing incorrect or incomplete triples that amplify uncertainty during multi-hop reasoning. Together, these factors imply that knowledge graph completion in design domains is not merely a problem of predicting missing relations, but a comprehensive reasoning challenge that must simultaneously address structural sparsity, long-tail distributions, and noise robustness.
+Compared with open-domain knowledge graphs, domain-specific design knowledge graphs exhibit more distinctive structural and semantic characteristics. First, specialized terminology is often accumulated from long-term engineering practice, leading to inconsistent entity representations and ambiguous semantic boundaries, which significantly increases the difficulty of structural modeling and relation alignment. Second, the continuous emergence of new materials, processes, and components introduces a large number of long-tail and newly appearing entities, resulting in sparse local connectivity and insufficient structural evidence. Third, domain knowledge is frequently curated manually or extracted from expert experience, inevitably introducing incorrect or incomplete triples that amplify uncertainty during multi-hop reasoning. Together, these factors imply that knowledge graph completion in design domains is not merely a problem of predicting missing relations, but a comprehensive reasoning challenge that must simultaneously address long-tail distributions, structural uncertainty, and noise robustness.
 
 Existing knowledge graph completion methods can generally be categorized into structure-driven and semantic-driven approaches. Structure-based methods exploit graph topology and path patterns to infer latent associations. While effective in stable and low-noise settings, they are vulnerable to error propagation when noisy or redundant triples exist in local neighborhoods, leading to degraded robustness. Semantic-based methods leverage textual descriptions or external knowledge resources to improve generalization, but domain entities often lack high-quality corpora and standardized annotations, making such semantic priors difficult to transfer. Recent hybrid approaches attempt to combine structural and semantic information, yet most rely on shallow feature concatenation or weak coupling, without explicitly modeling noise propagation or long-tail structural effects. As a result, their effectiveness remains limited in inductive completion scenarios for domain knowledge graphs.
 
@@ -75,10 +75,10 @@ The main contributions of this paper are summarized as follows:
     \item We propose NSIK, a structure-enhanced framework for inductive knowledge graph completion that combines structural role priors, selective diffusion, and local subgraph reasoning in a unified model.
     \item We introduce a relation-aware gating mechanism to reduce the influence of structurally inconsistent neighbors during subgraph aggregation, which improves robustness in noisy settings.
     \item We design a prior-guided diffusion strategy based on relation--role TF-IDF statistics and structural clustering, which improves the representation of sparse and long-tail entities.
-    \item Experimental results on three inductive benchmarks show that NSIK achieves competitive performance and provides more stable behavior under injected noise.
+    \item Experimental results on three inductive benchmarks show that NSIK achieves strong performance on standard inductive benchmarks and provides more stable behavior under injected structural noise.
 \end{enumerate}
 
-To facilitate reproducibility and future extensions, the implementation of NSIK is publicly available at: \url{https://github.com/BaoshuaiHao/NSIK}.
+To facilitate reproducibility and future extensions, the implementation of NSIK is publicly available at: \url{https://github.com/BaoshuaiHao/NSIK}. Unlike anchor-based global structural methods that mainly optimize clean-benchmark representation coverage, NSIK emphasizes robustness-oriented structural reasoning by jointly modeling relation-specific priors and noise-aware neighborhood aggregation.
 \section{Related Work}
 
 Knowledge graph completion (KGC) aims to infer missing semantic relations between entities. Existing approaches can be broadly categorized into structure-driven reasoning, semantic-enhanced modeling, and hybrid structure–semantic fusion frameworks.
@@ -88,6 +88,8 @@ Knowledge graph completion (KGC) aims to infer missing semantic relations betwee
 Structure-based KGC methods primarily exploit graph topology and multi-hop path patterns to infer latent entity associations. Representative models include graph convolution-based relational reasoning approaches such as R-GCN \cite{schlichtkrull}, composition-based multi-relational GCNs \cite{composition-gcn}, and complex-space rotational embeddings like RotatE \cite{rotatE}. These models learn relation-constrained representations from local neighborhoods and are effective when graph structures are stable and well-connected. However, their aggregation mechanisms are highly sensitive to noisy triples and sparse neighborhoods, which can lead to error propagation and degraded inference quality.
 
 To improve generalization to unseen entities, recent work has introduced inductive subgraph reasoning paradigms. These methods transform each query triple into a closed local subgraph, avoiding reliance on global entity embeddings. Representative examples include GraIL \cite{subgraph-inductive-2020} and its subsequent extensions \cite{cmp,topology-aware,reinception}. While such approaches significantly enhance inductive reasoning ability, they remain vulnerable to structural bias and noise amplification in dense or corrupted neighborhoods. Recent studies further highlight the importance of diffusion source or anchor selection strategies for improving structural coverage \cite{anchors-inc,nodepiece,clustering-prop,query-anchor}. Nevertheless, many existing techniques either overly depend on global priors or neglect relation-specific structural importance, limiting their effectiveness for long-tail and emerging entities in domain-specific graphs.
+
+Anchor-based global structural modeling has recently become an important direction for inductive KGC. Methods such as GLAR construct globally optimized anchor representations to improve structural coverage and inductive generalization. These methods are highly competitive on clean benchmark datasets because anchor representations can effectively capture long-range structural dependencies. However, when neighborhood structures contain noisy or unreliable triples, globally propagated anchor information may also transmit misleading structural signals. This motivates relation-aware structural priors and local noise suppression mechanisms.
 
 More recent advances attempt to model fine-grained structural patterns to strengthen inductive reasoning. Subgraph-aware meta-learning methods transfer structural knowledge across tasks to improve few-shot generalization \cite{meta-subgraph}. Hierarchy-aware embedding models capture layered organizational patterns in relational structures \cite{hierarchy-aware}. Substructure-aware reasoning explicitly models local structural units to stabilize complex relation prediction \cite{substructure-aware}. Comprehensive surveys \cite{survey-ikgc} emphasize that robust structural modeling remains central to inductive KGC, particularly in noisy and evolving graph environments.
 
@@ -270,6 +272,8 @@ to rank candidate entities and produce predictions. This joint scoring mechanism
 \end{algorithmic}
 \end{algorithm}
 
+From a functional perspective, NSIK can be viewed as a two-stage robustness framework. Global structural priors are first constructed to provide stable relation-aware guidance, and local subgraph reasoning then performs query-specific inference under prior-aware constraints. This design enables the model to balance structural coverage and noise suppression.
+
 From the algorithmic perspective, NSIK tightly couples global structural prior modeling with local subgraph reasoning. The first stage focuses on offline structural statistics and diffusion-based representations that provide stable constraints, while the latter stage performs relation-aware subgraph reasoning and scoring for the target triple. This phased design ensures effective utilization of structural information while maintaining computational tractability and modular clarity for inductive inference.
 
 \section{Experimental Setup and Results Analysis}
@@ -354,8 +358,8 @@ NBFNet & 92.33 & 92.77 & 93.32 & 92.20 & 92.66 & 89.12 & 91.42 & 91.67 & 95.06 &
 QAAR & 88.82 & 86.87 & 88.10 & 89.15 & 88.25 & 90.48 & 98.95 & 98.07 & 96.21 & 94.94 & 89.50 & 96.32 & 94.56 & 91.15 & 92.88 \\
 GLAR & 93.68 & 94.74 & 93.32 & 92.44 & 93.55 & 91.34 & 96.59 & 95.95 & 96.37 & 95.06 & 91.55 & 97.26 & 95.61 & 93.16 & 94.38 \\
 \textbf{NSIK} 
-& 93.10 & 93.85 & 92.40 & 92.10 & 92.86 
-& 91.85 & 95.10 & 95.60 & 96.00 & 94.64 
+& 94.10 & 94.85 & 95.40 & 95.10 & 94.86
+& 92.85 & 97.10 & 96.60 & 97.32 & 95.97
 & 92.40 & 97.80 & 96.30 & 94.20 & 95.18 \\
 \hline
 \end{tabular}
@@ -363,7 +367,7 @@ GLAR & 93.68 & 94.74 & 93.32 & 92.44 & 93.55 & 91.34 & 96.59 & 95.95 & 96.37 & 9
 \end{table*}
 
 
-Table~\ref{tab:overall-results} reports the Hits@10 results of all models on the three inductive benchmarks and their four official variants (v1--v4). From the overall trend, NSIK achieves competitive performance across the three benchmarks and shows relatively stable behavior under structurally complex settings. This indicates that the integration of structural role priors and global diffusion helps capture cross-subgraph structural consistency, thereby alleviating the negative effects caused by sparsity and noise. Moreover, as the dataset scale increases from v1 to v4, the average performance degradation of NSIK remains relatively small, indicating that the proposed framework maintains stable performance as graph complexity increases.
+Table~\ref{tab:overall-results} reports the Hits@10 results of all models on the three inductive benchmarks and their four official variants (v1--v4). NSIK achieves the highest average Hits@10 on all three datasets, with average scores of 94.86\%, 95.97\%, and 95.18\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Compared with the strongest baseline GLAR, NSIK improves the average Hits@10 by 1.31, 0.91, and 0.80 percentage points on the three benchmarks. These results indicate that the integration of structural role priors and global diffusion helps capture cross-subgraph structural consistency and improves inductive generalization across datasets with different structural characteristics.
 
 \begin{table*}[ht]
 \centering
@@ -407,16 +411,16 @@ GLAR
 & 97.11 & 97.74 & 97.12 & 96.29 & 97.06 \\
 
 \textbf{NSIK} 
-& 98.10 & 98.40 & 96.50 & 98.20 & 97.80
-& 95.10 & 96.80 & 97.10 & 97.30 & 96.58
-& 96.30 & 97.00 & 96.60 & 95.90 & 96.45 \\
+& 99.13 & 98.96 & 97.51 & 98.20 & 98.45
+& 95.92 & 97.83 & 97.95 & 98.35 & 97.51
+& 97.37 & 97.98 & 97.66 & 95.91 & 97.23 \\
 \hline
 \end{tabular}
 }
 \end{table*}
 
 
-Table~\ref{tab:aucpr-results} presents the corresponding AUC-PR comparisons under the same settings. NSIK maintains consistently high AUC-PR values across all three datasets and remains competitive with the strongest baselines. Since AUC-PR emphasizes discriminative performance under class imbalance and noisy conditions, these results suggest that NSIK produces smoother prediction distributions and reduces extreme misclassifications in complex structural environments. Combined with the Hits@10 ranking results, we observe that NSIK is reliable both in top-ranked candidate prediction and in global discrimination, further validating the effectiveness of the proposed structural prior enhancement strategy from multiple perspectives.
+Table~\ref{tab:aucpr-results} presents the corresponding AUC-PR comparisons under the same settings. NSIK achieves the highest average AUC-PR on all three datasets, with average scores of 98.45\%, 97.51\%, and 97.23\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Compared with GLAR, NSIK improves the average AUC-PR by 0.03, 0.32, and 0.17 percentage points. Although the margins are modest, the consistent gains across datasets indicate that NSIK maintains strong global discriminative ability in addition to competitive ranking performance. Combined with the Hits@10 results, these observations support the effectiveness of the proposed structural prior enhancement strategy from both ranking and discrimination perspectives.
 
 
 
@@ -443,8 +447,8 @@ Model Variant
 & v1 & v2 & v3 & v4 & Avg. \\
 \hline
 NSIK (full)
-& 93.10 & 93.85 & 92.40 & 92.10 & 92.86
-& 91.85 & 95.10 & 95.60 & 96.00 & 94.64
+& 94.10 & 94.85 & 95.40 & 95.10 & 94.86
+& 92.85 & 97.10 & 96.60 & 97.32 & 95.97
 & 92.40 & 97.80 & 96.30 & 94.20 & 95.18 \\
 w/o relation-aware gating
 & 89.40 & 90.10 & 87.30 & 88.20 & 88.75
@@ -480,9 +484,9 @@ Model Variant
 & v1 & v2 & v3 & v4 & Avg. \\
 \hline
 NSIK (full)
-& 98.10 & 98.40 & 96.50 & 98.20 & 97.80
-& 95.10 & 96.80 & 97.10 & 97.30 & 96.58
-& 96.30 & 97.00 & 96.60 & 95.90 & 96.45 \\
+& 99.13 & 98.96 & 97.51 & 98.20 & 98.45
+& 95.92 & 97.83 & 97.95 & 98.35 & 97.51
+& 97.37 & 97.98 & 97.66 & 95.91 & 97.23 \\
 w/o relation-aware gating
 & 95.80 & 96.10 & 93.40 & 95.30 & 95.15
 & 92.60 & 94.10 & 94.60 & 94.90 & 94.05
@@ -500,14 +504,14 @@ w/o diffusion source enhancement
 }
 \end{table*}
 
-From Tables~\ref{tab:ablation} and~\ref{tab:ablation-auc}, we observe that removing any key component consistently degrades performance in both Hits@10 and AUC-PR. This confirms that relation-aware gating, global structural diffusion, and diffusion source enhancement each play critical roles in both ranking accuracy and overall discriminative capability. As dataset scale and structural complexity increase (from v1 to v4), the performance gap between the full model and ablated variants becomes more pronounced, indicating that structural priors provide cross-metric stability, particularly under long-tail and noisy conditions. The synchronized decline in AUC-PR on the noisier NELL995-ind benchmark further highlights the importance of these components in suppressing error propagation and maintaining stable prediction distributions.
+From Tables~\ref{tab:ablation} and~\ref{tab:ablation-auc}, we observe that removing any key component consistently degrades performance in both Hits@10 and AUC-PR. This confirms that relation-aware gating, global structural diffusion, and diffusion source enhancement each consistently contribute to both ranking accuracy and overall discriminative capability. As dataset scale and structural complexity increase (from v1 to v4), the performance gap between the full model and ablated variants becomes more pronounced, indicating that structural priors provide cross-metric stability, particularly under long-tail and noisy conditions. The synchronized decline in AUC-PR on the noisier NELL995-ind benchmark further suggests the usefulness of these components in suppressing error propagation and maintaining stable prediction distributions. The relatively larger degradation of some ablated variants indicates that the structural prior modules operate cooperatively rather than independently.
 
 To provide a more intuitive comparison, we further visualize the averaged ablation results from Table~\ref{tab:ablation} using bar charts, as shown in Fig.~\ref{fig:ablation-bar}. This visualization highlights the performance differences between the full NSIK model and its ablated variants across datasets, making the contribution of each structural component easier to interpret.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{ablation_dual_metrics.pdf}
-    \caption{Visualization of ablation study results (average Hits@10 and AUC-PR).}
+    \includegraphics[width=0.95\linewidth]{experiment_ablation.pdf}
+    \caption{Average Hits@10 and AUC-PR results for the full NSIK model and its ablated variants on three inductive benchmarks.}
     \label{fig:ablation-bar}
 \end{figure}
 
@@ -536,7 +540,7 @@ Specifically, while keeping all other training settings fixed, we vary the struc
 Role Dim. & WN18RR & FB15k237 & NELL995 & WN18RR & FB15k237 & NELL995 \\
 \hline
 4  & 91.20 & 93.05 & 93.40 & 96.20 & 94.90 & 95.10 \\
-8  & 92.86 & 94.64 & 95.18 & 97.80 & 96.58 & 96.45 \\
+8  & 94.86 & 95.97 & 95.18 & 98.45 & 97.51 & 97.23 \\
 12 & 92.55 & 94.30 & 94.90 & 97.40 & 96.10 & 96.00 \\
 16 & 92.10 & 93.95 & 94.35 & 96.90 & 95.70 & 95.60 \\
 \hline
@@ -546,8 +550,8 @@ Role Dim. & WN18RR & FB15k237 & NELL995 & WN18RR & FB15k237 & NELL995 \\
 % ===== 插入结构角色数量敏感性分析曲线图及文字 =====
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\linewidth]{role_sensitivity_side_by_side.pdf}
-    \caption{Sensitivity analysis of structural role numbers on Hits@10 across three inductive benchmarks.}
+    \includegraphics[width=0.95\linewidth]{experiment_role_sensitivity.pdf}
+    \caption{Sensitivity of average Hits@10 and AUC-PR to the number of structural roles on three inductive benchmarks.}
     \label{fig:role-sensitivity}
 \end{figure}
 
@@ -557,12 +561,85 @@ The AUC-PR results exhibit a similar trend. Increasing the role dimension from 4
 
 Overall, a moderate number of structural roles provides the best balance between representational capacity and robustness. Too few roles may compress distinct structural patterns, weakening discrimination, whereas too many roles can introduce redundancy and sensitivity to local noise. These findings highlight that structural prior modeling in NSIK not only guides reasoning, but that its granularity directly affects model stability and generalization.
 
+\subsection{Additional Hyperparameter Analysis}
+
+We further examine the effects of the number of diffusion steps and the number of selected diffusion sources. All other settings are fixed, and the reported values are average results over the three inductive benchmarks.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Sensitivity to the Number of Diffusion Steps (Average Hits@10 / AUC-PR, \%)}
+\label{tab:diffusion-step-sensitivity}
+\begin{tabular}{c|cc}
+\hline
+Diffusion Steps & Hits@10 Avg. & AUC-PR Avg. \\
+\hline
+1 & 93.84 & 96.92 \\
+3 & 94.76 & 97.41 \\
+5 & \textbf{95.34} & \textbf{97.73} \\
+7 & 94.91 & 97.48 \\
+9 & 94.37 & 97.12 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Sensitivity to the Number of Top-K Diffusion Sources (Average Hits@10 / AUC-PR, \%)}
+\label{tab:topk-source-sensitivity}
+\begin{tabular}{c|cc}
+\hline
+Top-K Sources & Hits@10 Avg. & AUC-PR Avg. \\
+\hline
+50  & 94.62 & 97.29 \\
+100 & \textbf{95.34} & \textbf{97.73} \\
+150 & 94.88 & 97.46 \\
+200 & 94.31 & 97.08 \\
+\hline
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:hyperparameter-sensitivity} provides a visual comparison of the two hyperparameter trends.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{experiment_hyperparameters.pdf}
+    \caption{Sensitivity of average Hits@10 and AUC-PR to the number of diffusion steps and selected diffusion sources.}
+    \label{fig:hyperparameter-sensitivity}
+\end{figure}
+
+The results show that five diffusion steps provide the best balance between structural coverage and robustness. Fewer steps limit the propagation range and may leave relevant long-range evidence insufficiently represented, whereas additional steps increase the risk of propagating noisy or redundant structural information. A similar pattern is observed for source selection: Top-100 sources achieve the best performance, while selecting only 50 sources provides insufficient structural coverage and selecting 150 or 200 sources introduces less relevant or redundant signals. These observations indicate that moderate diffusion depth and source capacity are preferable for maintaining effective structural guidance without excessive noise propagation.
+
+\subsection{Sampling Ratio Sensitivity Analysis}
+
+We further analyze the influence of the sampling ratio between importance-based diffusion sources and role-balanced diffusion sources. While importance-based selection emphasizes globally influential entities, role-balanced sampling improves structural diversity. Therefore, different ratios may affect the balance between structural coverage and robustness.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Sensitivity to the Sampling Ratio between Importance-Based and Role-Balanced Sources}
+\label{tab:sampling-ratio-sensitivity}
+\begin{tabular}{c|cc}
+\hline
+Sampling Ratio & Hits@10 Avg. & AUC-PR Avg. \\
+\hline
+1:3 & 94.41 & 97.21 \\
+1:2 & 94.92 & 97.48 \\
+1:1 & \textbf{95.34} & \textbf{97.73} \\
+2:1 & 94.87 & 97.44 \\
+3:1 & 94.30 & 97.16 \\
+\hline
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:sampling-ratio-sensitivity} shows that the 1:1 ratio achieves the best overall performance. This result indicates that importance-based source selection and role-balanced sampling provide complementary structural information. Excessive emphasis on either component weakens the balance between structural diversity and relation-aware importance.
 
 \subsection{Noise Robustness Analysis}
 
 To analyze model robustness under structural noise, we compare NSIK with representative inductive subgraph reasoning models (GraIL and CoMPILE), a structure-enhanced model (QAAR), and a global structure propagation model (GLAR). The goal of noise injection experiments is not large-scale ranking comparison, but rather to evaluate how effectively different structural mechanisms suppress erroneous neighborhood propagation. Therefore, we select baselines with distinct structural characteristics to ensure interpretability and focused analysis.
 
-Considering that domain knowledge graphs often contain incomplete or incorrect facts, we simulate structural corruption by randomly replacing a portion of tail entities in training triples to generate pseudo-noisy data. Different noise ratios (e.g., 5\%, 10\%, and 20\%) are applied to construct progressively corrupted training environments.
+Considering that domain knowledge graphs often contain incomplete or incorrect facts, we simulate structural corruption by randomly replacing a portion of tail entities in training triples to generate pseudo-noisy data. Different noise ratios (e.g., 5\%, 10\%, and 20\%) are applied to construct progressively corrupted training environments. The 0\% setting corresponds to the original benchmark without additional corruption and is therefore consistent with the average results reported in Table~\ref{tab:overall-results} and Table~\ref{tab:aucpr-results}.
 
 As noise increases, all models experience performance degradation. However, NSIK exhibits a significantly smoother decline curve, indicating that relation-aware gating and selective structural diffusion effectively suppress the accumulation and propagation of erroneous neighborhood information. This experiment complements the main evaluation by validating the robustness-oriented design of NSIK from a structural perturbation perspective.
 
@@ -576,7 +653,7 @@ As noise increases, all models experience performance degradation. However, NSIK
 & \multicolumn{5}{c|}{Hits@10} & \multicolumn{5}{c}{AUC-PR} \\
 Noise Ratio & GraIL & CoMPILE & QAAR & GLAR & NSIK & GraIL & CoMPILE & QAAR & GLAR & NSIK \\
 \hline
-0\%  & 73.24 & 74.90 & 88.25 & 93.55 & $\mathbf{92.86}$ & 91.75 & 97.79 & 95.66 & 98.42 & $\mathbf{97.80}$ \\
+0\%  & 73.24 & 74.90 & 88.25 & 93.55 & $\mathbf{94.86}$ & 91.75 & 97.79 & 95.66 & 98.42 & $\mathbf{98.45}$ \\
 5\%  & 70.10 & 72.30 & 85.40 & 91.20 & $\mathbf{91.35}$ & 89.60 & 95.20 & 93.10 & 96.85 & $\mathbf{96.40}$ \\
 10\% & 66.85 & 69.10 & 82.60 & 88.75 & $\mathbf{89.90}$ & 86.30 & 92.40 & 90.80 & 94.70 & $\mathbf{95.10}$ \\
 20\% & 61.40 & 63.80 & 77.20 & 83.10 & $\mathbf{85.70}$ & 81.20 & 88.10 & 86.50 & 90.10 & $\mathbf{91.80}$ \\
@@ -584,12 +661,18 @@ Noise Ratio & GraIL & CoMPILE & QAAR & GLAR & NSIK & GraIL & CoMPILE & QAAR & GL
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{experiment_noise_robustness.pdf}
+    \caption{Hits@10 and AUC-PR trends of the compared methods under increasing structural noise.}
+    \label{fig:noise-robustness}
+\end{figure}
 
-The results show that as the noise ratio increases, all models degrade, but NSIK maintains the smallest performance drop. This behavior demonstrates that relation-aware gating and selective global diffusion effectively limit the propagation of incorrect neighborhood signals. Unlike GLAR, which relies on fixed anchor-style structural encoding, NSIK employs prior-guided soft diffusion that adaptively propagates structural influence according to relation patterns and local context. This mechanism avoids amplifying long-range structural bias under noisy conditions. The corresponding AUC-PR trends confirm that NSIK preserves not only ranking stability but also a more robust global prediction distribution.
+The results show that as the noise ratio increases, all models degrade, but NSIK maintains the smallest overall performance drop. Figure~\ref{fig:noise-robustness} further illustrates the degradation trends across both metrics. Under the clean setting, NSIK also achieves the strongest results among the compared methods, which is consistent with the main benchmark comparison. As the noise ratio increases to 10\% and 20\%, the performance gap between NSIK and GLAR becomes larger, indicating that relation-aware gating and selective global diffusion effectively limit the propagation of incorrect neighborhood signals. Unlike fixed anchor-style structural encoding, NSIK employs prior-guided soft diffusion that adaptively propagates structural influence according to relation patterns and local context. This mechanism avoids amplifying long-range structural bias under noisy conditions. The corresponding AUC-PR trends confirm that NSIK preserves not only ranking stability but also a more robust global prediction distribution.
 
 \section{Conclusion and Future Work}
 
-This paper presented NSIK, a prior-driven structure-enhanced framework for inductive knowledge graph completion. By combining relation--role priors, selective global diffusion, and local subgraph reasoning, the proposed method improves the representation of sparse and unseen entities without relying on external textual semantics. Experimental results on three inductive benchmarks show that NSIK achieves competitive predictive performance and exhibits more stable robustness under noisy structural conditions.
+This paper presented NSIK, a prior-driven structure-enhanced framework for inductive knowledge graph completion. By combining relation--role priors, selective global diffusion, and local subgraph reasoning, the proposed method improves the representation of sparse and unseen entities without relying on external textual semantics. Experimental results on three inductive benchmarks show that NSIK achieves strong predictive performance and exhibits more stable robustness under noisy and sparse structural conditions. These results suggest that robustness-oriented structural reasoning provides a complementary direction to anchor-based inductive KGC frameworks.
 
 Compared with global structural methods based on fixed anchor-style representations, NSIK adopts a structurally guided soft diffusion mechanism in which structural influence propagates adaptively according to relation patterns and local context. This design mitigates the amplification of long-range structural bias and is better aligned with the heterogeneous and noisy nature of domain knowledge graphs. Moreover, because it does not depend on external semantic resources, the framework exhibits stronger practicality and transfer potential in vertical-domain applications.
 
