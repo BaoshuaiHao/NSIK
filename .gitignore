@@ -26,6 +26,7 @@ data/
 experiments/
 runs/
 logs/
+records/
 checkpoints/
 *.log
 *.ckpt
