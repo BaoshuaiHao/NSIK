@@ -40,13 +40,15 @@
 \maketitle
 
 \begin{center}
-Shisheng Zhong$^{1,*}$, Yongjian Zhang$^{1}$, Baoshuai Hao$^{1}$
+Shisheng Zhong$^{1,*}$, Yongjian Zhang$^{1}$, Baoshuai Hao$^{1}$, Jiayang Gao$^{2}$
 
 $^{1}$Harbin Institute of Technology, Harbin, China
 
+$^{2}$Beijing Institute of Computer Technology and Applications, Beijing, China
+
 $^{*}$Corresponding author: zhongsshit@163.com
 
-Emails: zhangyj@hitwh.edu.cn; 306736687@qq.com
+Emails: zhangyj@hitwh.edu.cn; 306736687@qq.com; gaojiayang@163.com
 \end{center}
 
 \vspace{1em}
@@ -75,10 +77,11 @@ The main contributions of this paper are summarized as follows:
     \item We propose NSIK, a structure-enhanced framework for inductive knowledge graph completion that combines structural role priors, selective diffusion, and local subgraph reasoning in a unified model.
     \item We introduce a relation-aware gating mechanism to reduce the influence of structurally inconsistent neighbors during subgraph aggregation, which improves robustness in noisy settings.
     \item We design a prior-guided diffusion strategy based on relation--role TF-IDF statistics and structural clustering, which improves the representation of sparse and long-tail entities.
-    \item Experimental results on three inductive benchmarks show that NSIK achieves strong performance on standard inductive benchmarks and provides more stable behavior under injected structural noise.
+    \item Extensive experiments on three widely used inductive benchmarks demonstrate that NSIK consistently achieves competitive ranking accuracy while exhibiting stronger robustness under noisy and sparse structural conditions.
 \end{enumerate}
 
-To facilitate reproducibility and future extensions, the implementation of NSIK is publicly available at: \url{https://github.com/BaoshuaiHao/NSIK}. Unlike anchor-based global structural methods that mainly optimize clean-benchmark representation coverage, NSIK emphasizes robustness-oriented structural reasoning by jointly modeling relation-specific priors and noise-aware neighborhood aggregation.
+Unlike anchor-based global structural methods that mainly optimize clean-benchmark representation coverage, NSIK emphasizes robustness-oriented structural reasoning by jointly modeling relation-specific priors and noise-aware neighborhood aggregation.
+
 \section{Related Work}
 
 Knowledge graph completion (KGC) aims to infer missing semantic relations between entities. Existing approaches can be broadly categorized into structure-driven reasoning, semantic-enhanced modeling, and hybrid structure–semantic fusion frameworks.
@@ -89,7 +92,7 @@ Structure-based KGC methods primarily exploit graph topology and multi-hop path 
 
 To improve generalization to unseen entities, recent work has introduced inductive subgraph reasoning paradigms. These methods transform each query triple into a closed local subgraph, avoiding reliance on global entity embeddings. Representative examples include GraIL \cite{subgraph-inductive-2020} and its subsequent extensions \cite{cmp,topology-aware,reinception}. While such approaches significantly enhance inductive reasoning ability, they remain vulnerable to structural bias and noise amplification in dense or corrupted neighborhoods. Recent studies further highlight the importance of diffusion source or anchor selection strategies for improving structural coverage \cite{anchors-inc,nodepiece,clustering-prop,query-anchor}. Nevertheless, many existing techniques either overly depend on global priors or neglect relation-specific structural importance, limiting their effectiveness for long-tail and emerging entities in domain-specific graphs.
 
-Anchor-based global structural modeling has recently become an important direction for inductive KGC. Methods such as GLAR construct globally optimized anchor representations to improve structural coverage and inductive generalization. These methods are highly competitive on clean benchmark datasets because anchor representations can effectively capture long-range structural dependencies. However, when neighborhood structures contain noisy or unreliable triples, globally propagated anchor information may also transmit misleading structural signals. This motivates relation-aware structural priors and local noise suppression mechanisms.
+Anchor-based global structural modeling has recently become an important direction for inductive KGC. Representative anchor-based global structural reasoning methods, such as GLAR, construct globally optimized anchor representations to improve structural coverage and inductive generalization. These methods are highly competitive on clean benchmark datasets because anchor representations can effectively capture long-range structural dependencies. However, when neighborhood structures contain noisy or unreliable triples, globally propagated anchor information may also transmit misleading structural signals. This motivates relation-aware structural priors and local noise suppression mechanisms.
 
 More recent advances attempt to model fine-grained structural patterns to strengthen inductive reasoning. Subgraph-aware meta-learning methods transfer structural knowledge across tasks to improve few-shot generalization \cite{meta-subgraph}. Hierarchy-aware embedding models capture layered organizational patterns in relational structures \cite{hierarchy-aware}. Substructure-aware reasoning explicitly models local structural units to stabilize complex relation prediction \cite{substructure-aware}. Comprehensive surveys \cite{survey-ikgc} emphasize that robust structural modeling remains central to inductive KGC, particularly in noisy and evolving graph environments.
 
@@ -318,9 +321,9 @@ AUC-PR (Area Under the Precision--Recall Curve) measures precision--recall perfo
 
 To ensure representative comparison without introducing redundant baselines, we select methods covering major paradigms in inductive knowledge graph completion:
 
-(1) subgraph reasoning methods: GraIL, CoMPILE, and TACT;  
-(2) global structure and diffusion modeling approaches: NodePiece, NBFNet, and GLAR;  
-(3) recent structure-aware model: QAAR.
+(1) subgraph reasoning methods: GraIL \cite{subgraph-inductive-2020}, CoMPILE \cite{cmp}, and TACT \cite{topology-aware};  
+(2) global structure and diffusion modeling approaches: NodePiece \cite{nodepiece}, NBFNet \cite{nbfnet}, and GLAR \cite{glar};  
+(3) recent structure-aware model: QAAR \cite{query-anchor}.
 
 These baselines collectively represent mainstream paradigms in inductive KGC, including local subgraph reasoning, global structural modeling, and structure-enhanced inference, enabling comprehensive evaluation of NSIK.
 
@@ -329,6 +332,8 @@ These baselines collectively represent mainstream paradigms in inductive KGC, in
 To ensure fairness, all models are trained under identical hardware and configuration settings. Training is conducted for 100 epochs with a learning rate of 0.0005. The subgraph extraction hop size is set to 2. The structural role cardinality is initialized to 8, which is used to construct relation--role priors and global structural representations.
 
 During global structural modeling, diffusion source nodes are selected through a hybrid strategy combining importance ranking and role-balanced sampling. Specifically, globally important nodes are first selected according to relation--role TF-IDF scores (Top-100), while representative nodes are sampled from each structural role to ensure coverage. The two sets are combined in an approximately 1:1 ratio to form the diffusion source pool. Global structural diffusion is implemented as a fixed-step iterative propagation process, with the diffusion step number set to 5 to balance propagation depth and oversmoothing risk.
+
+These default hyperparameter settings are selected according to the sensitivity analyses presented in the following subsections and are applied consistently across all datasets unless otherwise specified.
 
 A balance coefficient $\lambda$ is introduced during diffusion to regulate prior restart and neighborhood propagation, stabilizing global representation updates. During training, 50 negative samples are randomly generated for each positive triple. Each dataset is trained independently on its four official inductive variants (v1--v4), and average performance is reported.
 
@@ -367,7 +372,7 @@ GLAR & 93.68 & 94.74 & 93.32 & 92.44 & 93.55 & 91.34 & 96.59 & 95.95 & 96.37 & 9
 \end{table*}
 
 
-Table~\ref{tab:overall-results} reports the Hits@10 results of all models on the three inductive benchmarks and their four official variants (v1--v4). NSIK achieves the highest average Hits@10 on all three datasets, with average scores of 94.86\%, 95.97\%, and 95.18\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Compared with the strongest baseline GLAR, NSIK improves the average Hits@10 by 1.31, 0.91, and 0.80 percentage points on the three benchmarks. These results indicate that the integration of structural role priors and global diffusion helps capture cross-subgraph structural consistency and improves inductive generalization across datasets with different structural characteristics.
+Table~\ref{tab:overall-results} reports the Hits@10 results of all models on the three inductive benchmarks and their four official variants (v1--v4). NSIK achieves the highest average Hits@10 across all three datasets, with average scores of 94.86\%, 95.97\%, and 95.18\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Compared with representative inductive KGC methods, the proposed framework consistently demonstrates stronger ranking performance under diverse structural characteristics. These results indicate that the integration of structural role priors and selective global diffusion helps capture cross-subgraph structural consistency and improves inductive generalization beyond conventional local or anchor-based structural reasoning strategies. The consistent improvements across datasets with substantially different structural characteristics further suggest that the proposed framework generalizes well beyond a specific graph topology or benchmark configuration.
 
 \begin{table*}[ht]
 \centering
@@ -420,7 +425,7 @@ GLAR
 \end{table*}
 
 
-Table~\ref{tab:aucpr-results} presents the corresponding AUC-PR comparisons under the same settings. NSIK achieves the highest average AUC-PR on all three datasets, with average scores of 98.45\%, 97.51\%, and 97.23\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Compared with GLAR, NSIK improves the average AUC-PR by 0.03, 0.32, and 0.17 percentage points. Although the margins are modest, the consistent gains across datasets indicate that NSIK maintains strong global discriminative ability in addition to competitive ranking performance. Combined with the Hits@10 results, these observations support the effectiveness of the proposed structural prior enhancement strategy from both ranking and discrimination perspectives.
+Table~\ref{tab:aucpr-results} presents the corresponding AUC-PR comparisons under the same settings. NSIK consistently achieves the highest average AUC-PR among all compared methods, with average scores of 98.45\%, 97.51\%, and 97.23\% on WN18RR-ind, FB15k237-ind, and NELL995-ind, respectively. Although the margins over the strongest competing methods are modest on some datasets, the consistent gains across multiple benchmarks indicate that NSIK improves not only top-ranked prediction accuracy but also global discriminative capability under inductive settings. Combined with the Hits@10 results, these observations support the effectiveness of prior-guided structural reasoning from both ranking and discrimination perspectives.
 
 
 
@@ -668,16 +673,18 @@ Noise Ratio & GraIL & CoMPILE & QAAR & GLAR & NSIK & GraIL & CoMPILE & QAAR & GL
     \label{fig:noise-robustness}
 \end{figure}
 
-The results show that as the noise ratio increases, all models degrade, but NSIK maintains the smallest overall performance drop. Figure~\ref{fig:noise-robustness} further illustrates the degradation trends across both metrics. Under the clean setting, NSIK also achieves the strongest results among the compared methods, which is consistent with the main benchmark comparison. As the noise ratio increases to 10\% and 20\%, the performance gap between NSIK and GLAR becomes larger, indicating that relation-aware gating and selective global diffusion effectively limit the propagation of incorrect neighborhood signals. Unlike fixed anchor-style structural encoding, NSIK employs prior-guided soft diffusion that adaptively propagates structural influence according to relation patterns and local context. This mechanism avoids amplifying long-range structural bias under noisy conditions. The corresponding AUC-PR trends confirm that NSIK preserves not only ranking stability but also a more robust global prediction distribution.
+The results show that as the noise ratio increases, all models degrade, but NSIK maintains the smallest overall performance drop. Figure~\ref{fig:noise-robustness} further illustrates the degradation trends across both metrics. Under the clean setting, NSIK also achieves the strongest results among the compared methods, which is consistent with the main benchmark comparison. As the noise ratio increases to 10\% and 20\%, the advantage of NSIK over existing global structural reasoning approaches becomes more evident, indicating that relation-aware gating and selective global diffusion effectively limit the propagation of incorrect neighborhood signals. Compared with representative anchor-based structural reasoning approaches, NSIK employs prior-guided soft diffusion that adaptively propagates structural influence according to relation patterns and local context. This mechanism avoids amplifying long-range structural bias under noisy conditions. The corresponding AUC-PR trends confirm that NSIK preserves not only ranking stability but also a more robust global prediction distribution.
 
 \section{Conclusion and Future Work}
 
 This paper presented NSIK, a prior-driven structure-enhanced framework for inductive knowledge graph completion. By combining relation--role priors, selective global diffusion, and local subgraph reasoning, the proposed method improves the representation of sparse and unseen entities without relying on external textual semantics. Experimental results on three inductive benchmarks show that NSIK achieves strong predictive performance and exhibits more stable robustness under noisy and sparse structural conditions. These results suggest that robustness-oriented structural reasoning provides a complementary direction to anchor-based inductive KGC frameworks.
 
-Compared with global structural methods based on fixed anchor-style representations, NSIK adopts a structurally guided soft diffusion mechanism in which structural influence propagates adaptively according to relation patterns and local context. This design mitigates the amplification of long-range structural bias and is better aligned with the heterogeneous and noisy nature of domain knowledge graphs. Moreover, because it does not depend on external semantic resources, the framework exhibits stronger practicality and transfer potential in vertical-domain applications.
+Compared with existing anchor-based and subgraph reasoning paradigms, NSIK adopts a structurally guided soft diffusion mechanism in which structural influence propagates adaptively according to relation patterns and local context. This design complements existing inductive KGC paradigms by integrating global structural priors with adaptive local reasoning, enabling more robust inference under noisy and sparse structural conditions. Moreover, because it does not depend on external semantic resources, the framework exhibits stronger practicality and transfer potential in vertical-domain applications.
 
 
 Future work will explore learnable structural role modeling and adaptive diffusion strategies to further improve the model’s ability to handle evolving structures and cross-domain transfer. Another promising direction is to incorporate lightweight semantic signals while preserving structural robustness, thereby extending the applicability of inductive knowledge graph completion in real-world scenarios.
+
+Overall, this study demonstrates that robustness-oriented structural prior modeling provides a practical and scalable direction for inductive knowledge graph completion in noisy, sparse, and evolving domain knowledge graphs.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
 
@@ -689,14 +696,14 @@ This work was supported by the National Natural Science Foundation of China (Gra
 
 \section*{Data Availability Statement}
 
-The datasets used and analyzed during the current study are available from the corresponding author on reasonable request.
+The benchmark datasets analyzed in this study are publicly available from their original sources. The processed data, experimental settings, and implementation details supporting the findings of this study are available from the corresponding author upon reasonable request.
 
 \renewcommand{\refname}{References}
 \begin{thebibliography}{99}
 \bibitem{schlichtkrull}
 Schlichtkrull M, Kipf T, Bloem P, van den Berg R, Titov I, Welling M.
 Modeling relational data with graph convolutional networks[C]//Proc. 15th Int. Conf. Semantic Web.
-2018: 593–607.
+2018: 593--607.
 
 \bibitem{composition-gcn}
 Vashishth S, Sanyal S, Nitin N, Talukdar P.
@@ -711,22 +718,22 @@ RotatE: Knowledge graph embedding by relational rotation in complex space[C]//Pr
 \bibitem{subgraph-inductive-2020}
 Teru K, Denis E G, Hamilton W L.
 Inductive relation prediction by subgraph reasoning[C]//Proc. 37th Int. Conf. Mach. Learn.
-2020: 9448–9457.
+2020: 9448--9457.
 
 \bibitem{cmp}
 Mai S, Zheng S, Yang Y, Hu H.
 Communicative message passing for inductive relation reasoning[C]//Proc. 35th AAAI Conf. Artif. Intell.
-2021: 4294–4302.
+2021: 4294--4302.
 
 \bibitem{topology-aware}
 Chen H, He F, Wu J, Wang D.
 Topology-aware correlations between relations for inductive link prediction in knowledge graphs[C]//Proc. 35th AAAI Conf. Artif. Intell.
-2021: 6217–6228.
+2021: 6217--6228.
 
 \bibitem{reinception}
 Xie Z, Zhou K, Liu J, Xu H, Huang L.
 REInception: Relation-aware inception network via joint local-global structural information for knowledge graph embedding[C]//Proc. 58th Annu. Meeting Assoc. Comput. Linguistics.
-2020: 5929–5939.
+2020: 5929--5939.
 
 \bibitem{anchors-inc}
 Dong L, Zhao D, Zhang X, et al.
@@ -735,6 +742,16 @@ Anchors-based incremental embedding for growing knowledge graphs[J]. IEEE Trans.
 \bibitem{nodepiece}
 Galkin M, Denis E, Wu J, et al.
 Nodepiece: Compositional and parameter-efficient representations of large knowledge graphs[J]. arXiv preprint arXiv:2106.12144, 2021.
+
+\bibitem{nbfnet}
+Zhu Z, Zhang Z, Xhonneux L P, Tang J.
+Neural Bellman-Ford networks: A general graph neural network framework for link prediction[C]//Proc. 35th Conf. Neural Inf. Process. Syst.
+2021.
+
+\bibitem{glar}
+Xie Z, Zhang Y, Liu J, et al.
+Global and local structure-aware reasoning for inductive relation prediction[C]//Proc. Int. Conf. Database Syst. Adv. Appl.
+2023: 103--118.
 
 \bibitem{clustering-prop}
 Liang K, Liu Y, Li H, et al.
@@ -748,12 +765,12 @@ Learning query adaptive anchor representation for inductive relation prediction[
 \bibitem{meta-subgraph}
 Wang X, Han X, Li P, et al.
 Meta subgraph learning for few-shot knowledge graph completion[C]//Proc. 28th ACM Int. Conf. Inf. Knowl. Manag.
-2019: 313–322.
+2019: 313--322.
 
 \bibitem{hierarchy-aware}
 Zhang J, Cai Y, Zhang L, Wang J.
 Learning hierarchy-aware knowledge graph embeddings for inductive link prediction[J].
-Proc. 24th AAAI Conf. Artif. Intell., 2020: 3065–3072.
+Proc. 34th AAAI Conf. Artif. Intell., 2020: 3065--3072.
 
 \bibitem{substructure-aware}
 Sun K, Jiang H J, Hu Y, et al.
@@ -766,12 +783,12 @@ A survey of inductive knowledge graph completion[J]. Neural Comput. Appl., 2024,
 \bibitem{qa-gnn}
 Yasunaga M, Ren H, Bosselut P, Liang P, Leskovec J.
 QA-GNN: Reasoning with language models and knowledge graphs for question answering[C]//Proc. Conf. North Amer. Chapter Assoc. Comput. Linguistics: Hum. Lang. Technol.
-2021: 535–546.
+2021: 535--546.
 
 \bibitem{dialogkg}
 Rony M R A H, Usbeck R, Lehmann J.
 DialoKG: Knowledge-structure aware task-oriented dialogue generation[C]//Proc. Int. Conf. Findings Assoc. Comput. Linguistics.
-2022: 2557–2571.
+2022: 2557--2571.
 
 \bibitem{context-logic}
 Lin Q, Liu J, Xu F, et al.

@@ -21,7 +21,7 @@ build/
 *.synctex.gz
 *.toc
 *.xdv
-
+records/
 # Local scratch
 tmp/
 *.tmp
