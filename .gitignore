@@ -1,0 +1,55 @@
+# macOS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Datasets and generated preprocessing caches
+data/
+
+# Experiment outputs, logs, checkpoints, and evaluation artifacts
+experiments/
+runs/
+logs/
+checkpoints/
+*.log
+*.ckpt
+*.pth
+*.pt
+
+# Local scratch / generated stores
+tmp.txt
+tmp/
+tmp_lmdb/
+*.mdb
+*.lmdb
+
+# Saved and downloaded data artifacts
+*.nt.gz
+*.npz
+*.pkl
+*.pickle
+*.npy
+*.json
+*.csv
+
+# Generated ranking / prediction artifacts
+*_predictions.txt
+neg_test_*.txt
+ranking_head.txt
+ranking_tail.txt
